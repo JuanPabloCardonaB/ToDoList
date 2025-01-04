@@ -3,6 +3,8 @@ import React, { useState, useRef } from 'react';
 function ToDoList() {
     const [tasks, setTasks] = useState([]);
     const [dragging, setDragging] = useState(false);
+    const [editingTask, setEditingTask] = useState(null);
+    const [newTaskValue, setNewTaskValue] = useState('');
     const dragTask = useRef();
     const draggedOverTask = useRef();
 
@@ -23,9 +25,18 @@ function ToDoList() {
         const updatedTasks = tasks.filter((task, i) => i !== index);
         setTasks(updatedTasks);
     }
-
+    
     function editTask(index) {
-        // Lógica para editar la tarea
+        setEditingTask(index);
+        setNewTaskValue(tasks[index]);
+    }
+
+    function saveTask(index){
+        const updatedTasks = [...tasks];
+        updatedTasks[index] = newTaskValue;
+        setTasks(updatedTasks);
+        setEditingTask(null);
+        setNewTaskValue('');
     }
 
     function handleDragStart(index) {
@@ -69,10 +80,29 @@ function ToDoList() {
                             onDragEnd={handleDragEnd}
                             onDragOver={handleDragOver}
                             className={`p-4 mb-2 bg-gray-800 rounded ${dragging ? 'dragging' : ''}`}
+                            
                         >
-                            <span className='text'>{task}</span>
-                            <button className="delete-task" onClick={() => removeTask(index)}>Delete</button>
-                            <button className="edit-task" onClick={() => editTask(index)}>Edit</button>
+                            {editingTask === index ? (
+                                <input id='task-input'
+                                placeholder='Ingrese la nueva tarea'
+                                type = 'text'
+                                value={newTaskValue}
+                                onChange={(e) => setNewTaskValue(e.target.value)}
+                                onBlur={() => saveTask(index)}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        saveTask(index);
+                                    }
+                                }}
+                                autoFocus
+                               /> 
+                            ) : (
+                                <>
+                                    <span className='text'>{task}</span>
+                                    <button className="delete-task" onClick={() => removeTask(index)}>Delete</button>
+                                    <button className="edit-task" onClick={() => editTask(index)}>Edit</button>
+                                </>
+                            )}
                         </li>
                     ))}
                 </ol>
